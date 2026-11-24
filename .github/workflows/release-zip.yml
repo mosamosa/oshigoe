@@ -1,0 +1,52 @@
+name: Attach update ZIP
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  package:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      group: release-zip-${{ github.event.release.id }}
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Build the update ZIP
+        shell: bash
+        run: |
+          version=$(<VERSION)
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ || "$RELEASE_TAG" != "v$version" ]]; then
+            printf '%s\n' "The release tag must match VERSION with a v prefix." >&2
+            exit 1
+          fi
+          git ls-tree -r --name-only HEAD | LC_ALL=C sort | diff - release-files.txt
+          git archive --format=zip --prefix=oshigoe/ --output="$RUNNER_TEMP/oshigoe.zip" HEAD
+
+      - name: Attach the update ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ github.event.release.id }}
+        run: |
+          archive="$RUNNER_TEMP/oshigoe.zip"
+          digest=$(sha256sum "$archive" | cut -d ' ' -f1)
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate \
+            --jq '.[] | select(.name == "oshigoe.zip") | (.digest // "unverified")')
+          if [[ "$existing" == "sha256:$digest" ]]; then
+            printf '%s\n' "The update ZIP is already attached."
+          elif [[ -n "$existing" ]]; then
+            printf '%s\n' "This release already has a different oshigoe.zip." >&2
+            exit 1
+          else
+            gh release upload "$RELEASE_TAG" "$archive" --repo "$GITHUB_REPOSITORY"
+          fi

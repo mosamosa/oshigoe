@@ -1,0 +1,19 @@
+name: Check release file list
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compare tracked files with release-files.txt
+        shell: bash
+        run: git ls-tree -r --name-only HEAD | LC_ALL=C sort | diff -u release-files.txt -

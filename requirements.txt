@@ -1,0 +1,8 @@
+aiohttp>=3.11,<4
+aiortc==1.16.0
+ifaddr>=0.2,<1
+inworld-voice-isolation==1.0.0
+numpy>=1.26,<3
+nvidia-ml-py>=12; sys_platform == "win32"
+psutil>=7,<8
+yt-dlp[default]

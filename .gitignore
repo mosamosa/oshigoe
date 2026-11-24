@@ -1,0 +1,7 @@
+.venv/
+.runtime/
+__pycache__/
+/.agents/skills/yomiyasu
+/.claude/skills/yomiyasu
+/.yomiyasu/
+/skills-lock.json

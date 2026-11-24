@@ -1,0 +1,27 @@
+[
+  {
+    "url": "https://youtu.be/aqz-KE-bpKQ?si=share",
+    "backend": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+    "frontend": "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+  },
+  {
+    "url": "https://m.twitch.tv/Example_Channel/?share=1",
+    "backend": "https://www.twitch.tv/example_channel",
+    "frontend": "https://www.twitch.tv/example_channel"
+  },
+  {
+    "url": "https://www.youtube.com:/watch?v=aqz-KE-bpKQ",
+    "backend": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+    "frontend": null
+  },
+  {
+    "url": "https://www.youtube.com/wa\ttch?v=aqz-KE-bpKQ",
+    "backend": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+    "frontend": null
+  },
+  {
+    "url": "https://www.youtube.com:443/watch?v=aqz-KE-bpKQ",
+    "backend": null,
+    "frontend": null
+  }
+]
