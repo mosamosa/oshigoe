@@ -22,6 +22,7 @@ const labels = {
   voice: ["Voice", "声"],
   background: ["Background", "背景音"],
   settings: ["Settings", "設定"],
+  openChat: ["Open stream chat", "配信のチャットを開く"],
   settingsNote: ["Settings take effect the next time you press Start.", "設定は次回「開始」を押下したときに反映されます"],
   browserLogin: ["Use browser sign-in", "ブラウザのログイン情報を使用"],
   browserLoginHelp: ["Browser sign-in help", "ブラウザのログイン情報を使用する条件と手順"],

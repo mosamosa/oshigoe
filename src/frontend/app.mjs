@@ -1,5 +1,5 @@
 import { initialLanguage, messageText, saveLanguage, setLanguage, t } from "/i18n.mjs";
-import { normalizeSourceUrl } from "/video-sites.mjs";
+import { normalizeSourceUrl, youtubeLiveChatUrl } from "/video-sites.mjs";
 import { StreamStatus } from "/stream-status.mjs";
 import { createSettingsPanel } from "/settings-panel.mjs";
 import { createTimelineControls, createVolumeControls } from "/broadcast-controls.mjs";
@@ -19,6 +19,7 @@ const broadcastStatus = document.querySelector("#broadcast-status");
 const start = document.querySelector("#start");
 const stop = document.querySelector("#stop");
 const playerEmpty = document.querySelector("#player-empty");
+const liveChat = document.querySelector("#live-chat");
 const streamStatus = new StreamStatus(document.querySelector("#stream-details"),
   document.querySelector("#stream-summary"), player);
 const urlKey = "oshigoe.url";
@@ -123,6 +124,13 @@ function renderAudioMode() {
   streamStatus.set("audio-mode", audioMode === "raw" ? t("rawAudio") : audioMode === "isolated" ? t("isolatedAudio") : null);
 }
 
+function renderLiveChat() {
+  const url = youtubeLiveChatUrl(shared.broadcast);
+  liveChat.hidden = !url;
+  if (url) liveChat.href = url;
+  else liveChat.removeAttribute("href");
+}
+
 function renderLanguage(locale) {
   setLanguage(locale);
   languagePicker.value = locale;
@@ -160,6 +168,7 @@ function showSharedState(state, wasReady) {
   shared.outcome = state.outcome;
   renderPlaybackNotice();
   renderAudioMode();
+  renderLiveChat();
   if (broadcast) {
     const videoTitle = broadcast.title ?? "";
     if (input.value !== broadcast.url) updateUrl(broadcast.url);
@@ -235,6 +244,12 @@ form.addEventListener("submit", (event) => {
 });
 
 stop.addEventListener("click", playback.stopBroadcast);
+liveChat.addEventListener("click", event => {
+  const chatWindow = window.open(liveChat.href, "oshigoe-live-chat", "popup,width=420,height=720");
+  if (!chatWindow) return;
+  chatWindow.opener = null;
+  event.preventDefault();
+});
 window.addEventListener("pagehide", () => {
   playback.close();
   serverMessage = "";

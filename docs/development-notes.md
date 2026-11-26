@@ -183,6 +183,12 @@ GitHub Actions は公開イベントを受けて版番号と配布ファイル�
 
 **参照先** [ZIP の添付ワークフロー](../.github/workflows/release-zip.yml)、[GitHub の変更不可リリース](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)
 
+## ライブチャット
+
+YouTube のライブ配信では、`https://www.youtube.com/live_chat?is_popout=1&noapp=1&v=動画ID` を別ウィンドウで開くリンクを再生状態の表示の右に表示します。iOS では YouTube の URL を開くと YouTube アプリが起動しますが、YouTube のユニバーサルリンクの設定（`apple-app-site-association`）は `noapp` パラメーターを含む URL を対象外としています。このため `noapp=1` を付与し、ブラウザーでチャットを開きます。
+
+チャットはアプリの画面に埋め込みません。YouTube は `embed_domain` パラメーターが埋め込み先のページのホスト名と一致すればチャットの iframe 表示を許可しますが、埋め込んだチャットはアプリのページとは別のサイトとして読み込まれます。ブラウザーがサードパーティ Cookie を制限している場合は YouTube のログイン状態が反映されず、チャットに書き込めません。
+
 ## 表示言語
 
 WebUI は日本語と英語に対応しています。初回はブラウザーの言語設定を参照し、手動選択はブラウザーごとに保存します。サーバーは英語の文言と翻訳用の識別子を送信し、各ブラウザーが選択言語でステータスやエラーを表示します。同じ配信を視聴している間も、表示言語は視聴者ごとに切り替えられます。サーバーログと CLI 出力は英語です。

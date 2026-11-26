@@ -37,6 +37,13 @@ function normalizeTwitchUrl(value) {
 
 const normalizers = [normalizeYoutubeUrl, normalizeTwitchUrl];
 
+// YouTube's universal links exclude URLs with a noapp parameter, so iOS opens the chat in the browser.
+export function youtubeLiveChatUrl(broadcast) {
+  const match = /^https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})$/.exec(broadcast?.url ?? "");
+  if (!match || !broadcast.stream?.input?.is_live) return null;
+  return "https://www.youtube.com/live_chat?" + new URLSearchParams({is_popout: 1, noapp: 1, v: match[1]});
+}
+
 export function normalizeSourceUrl(value) {
   for (const normalize of normalizers) {
     const url = normalize(value);

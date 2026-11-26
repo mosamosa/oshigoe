@@ -215,7 +215,12 @@ input[type=range]:disabled::-moz-range-thumb { background: var(--text-disabled);
   margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
   border-radius: var(--radius); background: var(--danger-soft); color: var(--danger);
 }
-#status { flex-basis: 100%; margin-block: var(--space-2) var(--space-1); }
+.status-line {
+  flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3);
+  margin-block: var(--space-2) var(--space-1);
+}
+.status-line:not(:has(> :not([hidden]))) { display: none; }
+#live-chat { margin-inline-start: auto; color: var(--accent); font-size: var(--text-small); font-weight: 600; }
 #stream-summary { font-variant-numeric: tabular-nums; }
 
 /* Volume */
