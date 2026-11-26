@@ -195,6 +195,13 @@ class ChooseSourceTest(unittest.TestCase):
         self.assertEqual(choose_source(info, bool, quality=quality).video.url, direct["url"])
         self.assertEqual(choose_source(info, bool, quality=quality, prefer_hls=True).video.url, hls["url"])
         self.assertEqual(choose_source({"formats": [direct]}, bool, prefer_hls=True).video.url, direct["url"])
+    def test_live_title_omits_the_extraction_time_yt_dlp_appends(self):
+        live = {"is_live": True, "formats": [{"url": "https://example.test/live.m3u8", "protocol": "m3u8_native",
+                                              "vcodec": "avc1.42c01e", "acodec": "aac", "height": 720}]}
+        source = choose_source({**live, "title": "Stream 2026-11-26 23:36", "fulltitle": "Stream"}, bool)
+        self.assertEqual(source.title, "Stream")
+        self.assertEqual(choose_source({**live, "title": "Stream"}, bool).title, "Stream")
+        self.assertEqual(choose_source(live, bool, fallback_title="Video").title, "Video")
 
 
 class BrowserLoginTest(unittest.IsolatedAsyncioTestCase):

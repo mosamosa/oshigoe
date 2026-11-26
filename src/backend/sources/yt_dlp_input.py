@@ -76,7 +76,9 @@ def choose_source(info, codec_for, encodings=(), quality=VideoQuality(), *, pref
         fps=positive_number(video, "fps"), audio_codec=audio_format.get("acodec"),
         audio_sample_rate=positive_number(audio_format, "asr"), duration=None if live else positive_number(info, "duration"),
     )
-    return Source(info.get("title") or fallback_title, video["vcodec"], make_input(video),
+    # yt-dlp appends the extraction time to the title of a live stream; fulltitle keeps the original.
+    title = info.get("fulltitle") or info.get("title") or fallback_title
+    return Source(title, video["vcodec"], make_input(video),
                   make_input(audio) if audio else None, encoding, quality, metadata)
 
 
