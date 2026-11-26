@@ -7,6 +7,10 @@ from .video_encoding import H264_BITSTREAM_FILTER, VideoEncoding, video_encode_a
 
 
 HLS_PROTOCOLS = {"m3u8", "m3u8_native"}
+# Start a live HLS input one segment behind the newest one. Segments arrive in bursts, and the
+# arrival time drifts by up to one segment against the playback clock, so starting at the newest
+# segment leaves no margin and playback stalls whenever the next segment arrives late.
+LIVE_START_INDEX = "-2"
 # FFmpeg's HTTP reader drains the rest of the response before a seek when the remaining bytes are
 # within this threshold. Without an explicit value, HTTPS on Windows treats every response as
 # within it and reads up to the seek position. Use avio's default read-ahead threshold instead.
@@ -63,7 +67,7 @@ def _ffmpeg_input(media, start_at, *, accurate=True):
     if media.protocol != "file":
         args += ["-rw_timeout", "15000000", "-protocol_whitelist", "http,https,tcp,tls,crypto"]
     if media.hls:
-        args += ["-live_start_index", "-1"]
+        args += ["-live_start_index", LIVE_START_INDEX]
     elif media.protocol != "file":
         args += ["-short_seek_size", str(HTTP_SHORT_SEEK_BYTES)]
     headers = "".join(f"{key}: {value}\r\n" for key, value in media.headers.items()
