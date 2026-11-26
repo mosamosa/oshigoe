@@ -2,6 +2,7 @@ import asyncio
 import ipaddress
 import logging
 import shutil
+from asyncio import proactor_events
 from functools import partial
 from pathlib import Path
 
@@ -146,6 +147,31 @@ async def close_sockets(app):
         await broadcast.job
 
 
+def finish_datagram_close_after_pending_send():
+    """Make a proactor datagram transport report connection_lost when close() waits for a send.
+
+    CPython defers connection_lost until the in-flight send completes, but the write loop then
+    returns early because the transport is closing, so connection_lost never runs. aioice waits
+    for it while closing a WebRTC peer, which kept a stopping broadcast from finishing.
+    """
+    transport = proactor_events._ProactorDatagramTransport
+    loop_writing = transport._loop_writing
+    if getattr(loop_writing, "finishes_close", False):
+        return
+
+    def finish_close(self, fut=None):
+        if fut is not None and fut is self._write_fut and self._closing:
+            self._write_fut = None
+            if not fut.cancelled():
+                fut.exception()
+            self._loop.call_soon(self._call_connection_lost, None)
+            return
+        loop_writing(self, fut)
+
+    finish_close.finishes_close = True
+    transport._loop_writing = finish_close
+
+
 def is_reset_during_close(context):
     """Match the Windows proactor shutting down a socket the peer already reset."""
     callback = getattr(context.get("handle"), "_callback", None)
@@ -244,6 +270,7 @@ def serve(args):
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg was not found on PATH.")
     logging.basicConfig(level=logging.INFO)
+    finish_datagram_close_after_pending_send()
     isolator = AudioIsolation(VOICE_MODEL, None if args.device == "auto" else args.device)
     web.run_app(create_app(isolator), host=str(args.host), port=args.port,
                 print=lambda _: print_listening_urls(args.host, args.port))

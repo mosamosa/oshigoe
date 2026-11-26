@@ -8,7 +8,8 @@ from aiohttp import WSServerHandshakeError
 from aiohttp.test_utils import TestClient, TestServer
 
 from src.backend.broadcast import Broadcast, BroadcastRoom, SignalState
-from src.backend.server import MODEL, ROOM, create_app, ignore_resets_during_close, sample_resources
+from src.backend.server import (MODEL, ROOM, create_app, finish_datagram_close_after_pending_send,
+                                ignore_resets_during_close, sample_resources)
 
 
 class SignalTest(unittest.IsolatedAsyncioTestCase):
@@ -163,3 +164,23 @@ class ConnectionResetLogTest(unittest.IsolatedAsyncioTestCase):
         finally:
             await anext(cleanup, None)
         self.assertIsNone(loop.get_exception_handler())
+
+
+class DatagramCloseTest(unittest.IsolatedAsyncioTestCase):
+    async def test_closing_with_a_send_in_flight_reports_connection_lost(self):
+        finish_datagram_close_after_pending_send()
+        loop = asyncio.get_running_loop()
+        lost = loop.create_future()
+
+        class Sender(asyncio.DatagramProtocol):
+            def connection_lost(self, exc):
+                lost.set_result(exc)
+
+        receiver, _ = await loop.create_datagram_endpoint(asyncio.DatagramProtocol, local_addr=("127.0.0.1", 0))
+        sender, _ = await loop.create_datagram_endpoint(Sender, local_addr=("127.0.0.1", 0))
+        try:
+            sender.sendto(b"bye", receiver.get_extra_info("sockname"))
+            sender.close()
+            self.assertIsNone(await asyncio.wait_for(lost, 1))
+        finally:
+            receiver.close()

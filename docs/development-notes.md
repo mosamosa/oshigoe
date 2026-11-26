@@ -79,6 +79,8 @@ iOS では、全画面表示の解除前後に WebKit が再生を一時停止�
 
 配信の停止時は、FFmpeg の終了とメディア処理スレッドの終了を待ってから、次の配信を受け付けます。一時停止に伴う終了処理の途中で停止を要求した場合も、同じ順序で処理します。
 
+Windows の Python 3.12 の asyncio では、UDP の送信中に `close()` を呼び出すと、送信の完了後も `connection_lost` が呼び出されず、トランスポートが閉じません。aiortc は WebRTC の接続を閉じる直前に RTCP BYE と DTLS の close_notify を送信し、続けて aioice が ICE の UDP ソケットを閉じて `connection_lost` を待機します。この送信が完了する前にソケットを閉じると、視聴者の接続の終了処理が完了せず、配信は停止処理中のまま終了しません。サーバーは起動時に asyncio のデータグラムトランスポートを修正し、送信の完了時にトランスポートが終了処理中であれば `connection_lost` を呼び出すようにします。
+
 **参照先** [配信の管理](../src/backend/broadcast.py)、[メディアの中継とシーク処理](../src/backend/media/pipeline.py)、[ブラウザーの再生処理](../src/frontend/playback.mjs)、[音量とシークの操作](../src/frontend/broadcast-controls.mjs)
 
 ## 配信中の障害復旧
